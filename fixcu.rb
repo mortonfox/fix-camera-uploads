@@ -8,12 +8,12 @@ require 'getoptlong'
 
 def find_unique newname, newsuffix
   newfilename = "#{newname}#{newsuffix}"
-  return newfilename if not File.exists? newfilename
+  return newfilename unless File.exists? newfilename
 
   # Look for a non-conflicting file name.
   1.upto(1000) { |i|
     newfilename = "#{newname}-#{i}#{newsuffix}"
-    return newfilename if not File.exists? newfilename
+    return newfilename unless File.exists? newfilename
   }
 
   fail "Can't find non-conflicting file name for #{newname}-???#{newsuffix}"
@@ -35,12 +35,12 @@ Usage: #{$0} [OPTIONS] [path]
 -h, --help:
     Show help.
 
-path: 
+path:
     Folder in which to process image files.
     Default: #{default_path}
 EOM
 
-begin 
+begin
   opts = GetoptLong.new(
     [ '--help', '-h', GetoptLong::NO_ARGUMENT ]
   )
@@ -58,7 +58,7 @@ rescue => err
 end
 
 path = ARGV[0] || default_path
-if not Dir.exists? path
+unless Dir.exists? path
   $stderr.puts "Path '#{path}' is not a folder or does not exist."
   exit 1
 end
@@ -81,7 +81,7 @@ Dir.glob('2002-*.jpg') { |fname|
     else
       t = photo.file_modify_date
       if t and t > TIME_LOWER_BOUND
-        puts "Using file modify time #{t}..."    
+        puts "Using file modify time #{t}..."
         new_time = t
       end
     end
@@ -105,7 +105,7 @@ Dir.glob('2002-*.jpg') { |fname|
     end
 
     if photo.changed?
-      puts "Saving EXIF changes..."
+      puts 'Saving EXIF changes...'
       photo.save
       FileUtils.touch fname, :mtime => new_time
     end
