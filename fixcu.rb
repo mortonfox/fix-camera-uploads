@@ -8,12 +8,12 @@ require 'getoptlong'
 
 def find_unique newname, newsuffix
   newfilename = "#{newname}#{newsuffix}"
-  return newfilename unless File.exists? newfilename
+  return newfilename unless File.exist? newfilename
 
   # Look for a non-conflicting file name.
   1.upto(1000) { |i|
     newfilename = "#{newname}-#{i}#{newsuffix}"
-    return newfilename unless File.exists? newfilename
+    return newfilename unless File.exist? newfilename
   }
 
   fail "Can't find non-conflicting file name for #{newname}-???#{newsuffix}"
@@ -29,8 +29,8 @@ TIME_LOWER_BOUND = Time.local 2010
 
 default_path = File.join Dir.home, 'Dropbox', 'Camera Uploads'
 
-USAGE = <<-EOM
-Usage: #{$0} [OPTIONS] [path]
+USAGE = <<-EOM.freeze
+Usage: #{$PROGRAM_NAME} [OPTIONS] [path]
 
 -h, --help:
     Show help.
@@ -42,10 +42,10 @@ EOM
 
 begin
   opts = GetoptLong.new(
-    [ '--help', '-h', GetoptLong::NO_ARGUMENT ]
+    ['--help', '-h', GetoptLong::NO_ARGUMENT]
   )
 
-  opts.each { |opt, arg|
+  opts.each { |opt, _arg|
     case opt
     when '--help'
       puts USAGE
@@ -58,8 +58,8 @@ rescue => err
 end
 
 path = ARGV[0] || default_path
-unless Dir.exists? path
-  $stderr.puts "Path '#{path}' is not a folder or does not exist."
+unless Dir.exist? path
+  warn "Path '#{path}' is not a folder or does not exist."
   exit 1
 end
 
@@ -74,31 +74,29 @@ Dir.glob('2002-*.jpg') { |fname|
 
     new_time = nil
     t = photo.gps_date_time
-    if t and t > TIME_LOWER_BOUND
+    if t && t > TIME_LOWER_BOUND
       t = t.localtime
       puts "Using GPS time #{t}..."
       new_time = t
     else
       t = photo.file_modify_date
-      if t and t > TIME_LOWER_BOUND
+      if t && t > TIME_LOWER_BOUND
         puts "Using file modify time #{t}..."
         new_time = t
       end
     end
 
-    unless new_time
-      puts "Can't get a proper time for this file."
-    end
+    puts "Can't get a proper time for this file." unless new_time
 
     t = photo.create_date
-    if t and t > TIME_LOWER_BOUND
+    if t && t > TIME_LOWER_BOUND
       puts "Not changing create_date #{t}."
     else
       photo.create_date = new_time
     end
 
     t = photo.date_time_original
-    if t and t > TIME_LOWER_BOUND
+    if t && t > TIME_LOWER_BOUND
       puts "Not changing date_time_original #{t}."
     else
       photo.date_time_original = new_time
@@ -107,13 +105,13 @@ Dir.glob('2002-*.jpg') { |fname|
     if photo.changed?
       puts 'Saving EXIF changes...'
       photo.save
-      FileUtils.touch fname, :mtime => new_time
+      FileUtils.touch fname, mtime: new_time
     end
 
     newname = new_time.strftime '%Y-%m-%d %H-%M-%S'
     puts "Renaming file to #{newname}.jpg"
     rename_file fname, newname, '.jpg'
   rescue => err
-    $stderr.puts "Error processing file #{fname}: #{err}"
+    warn "Error processing file #{fname}: #{err}"
   end
 }
