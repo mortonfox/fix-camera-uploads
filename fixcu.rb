@@ -16,7 +16,7 @@ def find_unique newname, newsuffix
     return newfilename unless File.exist? newfilename
   }
 
-  fail "Can't find non-conflicting file name for #{newname}-???#{newsuffix}"
+  raise "Can't find non-conflicting file name for #{newname}-???#{newsuffix}"
 end
 
 def rename_file oldname, newname, newsuffix
